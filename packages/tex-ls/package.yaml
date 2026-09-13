@@ -1,0 +1,39 @@
+---
+name: tex-ls
+description: A LaTeX and BibTeX language server, formatter, and linter.
+homepage: https://github.com/backmatter/tex-ls
+licenses:
+  - MIT
+languages:
+  - LaTeX
+categories:
+  - LSP
+  - Formatter
+  - Linter
+source:
+  id: pkg:github/backmatter/tex-ls@v0.1.0
+  asset:
+    - target: [linux_x64_gnu, linux_x64_musl]
+      file: tex-ls-x86_64-unknown-linux-musl.tar.gz
+      bin: tex-ls
+    - target: [linux_arm64_gnu, linux_arm64_musl]
+      file: tex-ls-aarch64-unknown-linux-musl.tar.gz
+      bin: tex-ls
+    - target: darwin_x64
+      file: tex-ls-x86_64-apple-darwin.tar.gz
+      bin: tex-ls
+    - target: darwin_arm64
+      file: tex-ls-aarch64-apple-darwin.tar.gz
+      bin: tex-ls
+    - target: win_x64
+      file: tex-ls-x86_64-pc-windows-msvc.zip
+      bin: tex-ls.exe
+    - target: win_arm64
+      file: tex-ls-aarch64-pc-windows-msvc.zip
+      bin: tex-ls.exe
+bin:
+  tex-ls: "{{source.asset.bin}}"
+share:
+  tex-ls/LICENSE: LICENSE
+  tex-ls/unicode-math.LICENSE: unicode-math.LICENSE
+  tex-ls/unicode-math.NOTICE: unicode-math.NOTICE

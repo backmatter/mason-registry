@@ -1,0 +1,11 @@
+name: Publish registry
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mason-org/actions/registry-release@v1
