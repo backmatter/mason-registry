@@ -11,7 +11,7 @@ categories:
   - Formatter
   - Linter
 source:
-  id: pkg:github/backmatter/tex-ls@v0.1.0
+  id: pkg:github/backmatter/tex-ls@v0.1.2
   asset:
     - target: [linux_x64_gnu, linux_x64_musl]
       file: tex-ls-x86_64-unknown-linux-musl.tar.gz
