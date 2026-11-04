@@ -1,0 +1,69 @@
+name: Update tex-ls
+on:
+  schedule:
+    - cron: '23 6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: update-tex-ls
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - name: Check latest published release
+        id: release
+        run: |
+          tag=$(gh release view --repo backmatter/tex-ls --json tagName --jq .tagName)
+          RELEASE_TAG="$tag" python3 - <<'PYTHON'
+          import os
+          from pathlib import Path
+          import re
+
+          tag = os.environ["RELEASE_TAG"]
+          if not re.fullmatch(r"v\d+\.\d+\.\d+", tag):
+              raise SystemExit(f"Expected a stable release tag, got {tag!r}")
+          current = re.search('pkg:github/backmatter/tex-ls@v(\\d+\\.\\d+\\.\\d+)', Path('packages/tex-ls/package.yaml').read_text()).group(1)
+          version = lambda value: tuple(map(int, value.split(".")))
+          if version(tag[1:]) > version(current):
+              with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+                  print(f"tag={tag}", file=output)
+          else:
+              print(f"tex-ls is current: v{current} (latest: {tag})")
+          PYTHON
+      - name: Update package version
+        if: steps.release.outputs.tag != ''
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          python3 - <<'PYTHON'
+          import os
+          from pathlib import Path
+          import re
+
+          path = Path("packages/tex-ls/package.yaml")
+          path.write_text(re.sub(
+              r"pkg:github/backmatter/tex-ls@v\d+\.\d+\.\d+",
+              "pkg:github/backmatter/tex-ls@" + os.environ["RELEASE_TAG"],
+              path.read_text(),
+          ))
+          PYTHON
+      - name: Commit update and run downstream workflow
+        if: steps.release.outputs.tag != ''
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/tex-ls/package.yaml
+          git commit -m "fix: update tex-ls to $RELEASE_TAG"
+          git push origin HEAD:main
+          # Pushes made with GITHUB_TOKEN do not trigger push workflows.
+          gh workflow run release.yml --ref main
